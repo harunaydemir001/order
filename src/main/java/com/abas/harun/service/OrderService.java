@@ -5,9 +5,7 @@ import com.abas.harun.mapper.MapperGenerator;
 import com.abas.harun.mapper.MapperGeneratorSingleton;
 import com.abas.harun.model.Order;
 import com.abas.harun.repository.OrderRepository;
-import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
 import java.util.List;
@@ -81,32 +79,38 @@ public class OrderService {
     }
 
     public String countProductPerOrder() {
-        Map<Long, Integer> productOrderMap = countProductPerOrder(orderRepository.findAll());
+        Map<Long, Map<Long, Integer>> productOrderMap = countProductPerOrder(orderRepository.findAll());
 
-        StringBuilder output = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-        productOrderMap.forEach((malNumarasi, quantity) ->
-                output.append("Mal Numarası: ").append(malNumarasi)
-                        .append(", Miktar: ").append(quantity)
-                        .append("\n")
-        );
 
-        return output.toString();
-    }
-
-    private Map<Long, Integer> countProductPerOrder(List<Order> orders) {
-
-        Map<Long, Integer> productOrderMap = new HashMap<>();
-
-        for (Order order : orders) {
-            productOrderMap.merge(order.getMalNumarasi(), order.getMiktar(), Integer::sum);
+         for (Map.Entry<Long, Map<Long, Integer>> entry : productOrderMap.entrySet()) {
+            Long malNumarasi = entry.getKey();
+            sb.append("Mal Numarası: ").append(malNumarasi).append("\n");
+            for (Map.Entry<Long, Integer> siparisEntry : entry.getValue().entrySet()) {
+                Long siparisNo = siparisEntry.getKey();
+                Integer miktar = siparisEntry.getValue();
+                sb.append("  Sipariş: ").append(siparisNo).append(", Miktar: ").append(miktar).append("\n");
+            }
         }
-        return productOrderMap;
+         return sb.toString();
     }
+        private Map<Long, Map<Long, Integer>> countProductPerOrder (List <Order> orders) {
+            Map<Long, Map<Long, Integer>> malSiparisMap = new HashMap<>();
 
-    public OrderDto createOrder(OrderDto orderDto) {
-        orderRepository.save(mapper.orderDTOToOrder(orderDto));
-        return orderDto;
+            for (Order order : orders) {
+                malSiparisMap
+                        .computeIfAbsent(order.getMalNumarasi(), k -> new HashMap<>())
+                        .put(order.getSiparisNo(), malSiparisMap.get(order.getMalNumarasi())
+                                .getOrDefault(order.getSiparisNo(), 0) + order.getMiktar());
+            }
+            return malSiparisMap;
+        }
+
+
+        public OrderDto createOrder (OrderDto orderDto){
+            orderRepository.save(mapper.orderDTOToOrder(orderDto));
+            return orderDto;
+        }
     }
-}
 
