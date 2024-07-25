@@ -3,10 +3,8 @@ package com.abas.harun.controller;
 import com.abas.harun.dto.OrderDto;
 import com.abas.harun.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -29,7 +27,7 @@ public class OrderController {
 
     @PostMapping()
     @Operation(summary = "Create Order")
-    public OrderDto createOrder(OrderDto orderDto) {
+    public OrderDto createOrder(@Parameter(description = "Order DTO", required = true) @RequestBody OrderDto orderDto) {
         return orderService.createOrder(orderDto);
     }
 

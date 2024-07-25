@@ -104,7 +104,7 @@ public class OrderService {
         return productOrderMap;
     }
 
-    public OrderDto createOrder(@Parameter(description = "Order DTO", required = true) @RequestBody OrderDto orderDto) {
+    public OrderDto createOrder(OrderDto orderDto) {
         orderRepository.save(mapper.orderDTOToOrder(orderDto));
         return orderDto;
     }
